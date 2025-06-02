@@ -7,6 +7,7 @@ from sqlalchemy import select
 from db.tables import RewardsTable
 from db.user_karma import UserKarma
 
+
 class Karma(commands.Cog):
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s %(message)s', handlers=[logging.StreamHandler()])
 
@@ -33,7 +34,7 @@ class Karma(commands.Cog):
             return
 
         await UserKarma().handle_message_karma(user_id=message.author.id, guild_id=message.guild.id,
-            timestamp=message.created_at.timestamp(), )
+                                               timestamp=message.created_at.timestamp(), )
 
     @tasks.loop(minutes=1)
     async def give_voice_karma(self):
@@ -41,7 +42,7 @@ class Karma(commands.Cog):
             for guild in self.bot.guilds:
                 for channel in guild.voice_channels:
                     active_users = [member for member in channel.members if
-                        not member.bot and not member.voice.self_mute and not member.voice.self_deaf]
+                                    not member.bot and not member.voice.self_mute and not member.voice.self_deaf]
                     if len(active_users) >= 2:
                         for user in active_users:
                             await UserKarma().adjust_karma_for_user(user.id, guild.id, amount=1)
@@ -88,7 +89,7 @@ class Karma(commands.Cog):
             return
 
         await UserKarma.handle_reaction_change(message_author=message.author, guild_id=payload.guild_id,
-            emoji_id=payload.emoji.id, is_addition=True)
+                                               emoji_id=payload.emoji.id, is_addition=True)
 
     @discord.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -100,7 +101,7 @@ class Karma(commands.Cog):
             return
 
         await UserKarma.handle_reaction_change(message_author=message.author, guild_id=payload.guild_id,
-            emoji_id=payload.emoji.id, is_addition=False)
+                                               emoji_id=payload.emoji.id, is_addition=False)
 
     @discord.slash_command(name="adjustkarma", contexts={discord.InteractionContextType.guild})
     @discord.ext.commands.has_guild_permissions(administrator=True)
@@ -181,18 +182,18 @@ class Karma(commands.Cog):
     async def on_command_error(self, ctx, error):
         """Handles errors """
         embed = discord.Embed(title="Error", description="Something went wrong while executing the command.",
-            color=discord.Color.red())
+                              color=discord.Color.red())
 
         if isinstance(error, commands.MissingPermissions):
             embed.add_field(name="Permission Denied", value="You lack the required permissions to run this command.",
-                inline=False)
+                            inline=False)
         elif isinstance(error, commands.MemberNotFound):
             embed.add_field(name="Member Not Found", value="The specified member could not be found.", inline=False)
         elif isinstance(error, commands.CommandInvokeError):
             embed.add_field(name="Command Error", value=str(error.original), inline=False)
         else:
             embed.add_field(name="Unknown Error", value="An unexpected error occurred. Please contact an admin.",
-                inline=False)
+                            inline=False)
 
         try:
             await ctx.respond(embed=embed, ephemeral=True)
