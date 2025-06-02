@@ -1,5 +1,4 @@
-import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
@@ -28,7 +27,7 @@ class AutoCommands(commands.Cog):
             embed.add_field(name='Error:', value="```python\n{}```".format(error), inline=False)
             embed.set_thumbnail(url=self.bot.user.avatar)
             embed.set_footer(text='Error Message', icon_url=ctx.message.author.avatar)
-            embed.timestamp = datetime.utcnow()
+            embed.timestamp = datetime.now(timezone.utc)
             await ctx.channel.send(embed=embed)
             # await channel.send(embed=embed)
             print(error)
@@ -47,7 +46,7 @@ class AutoCommands(commands.Cog):
             embed.add_field(name='Error:', value="```python\n{}```".format(error), inline=False)
             embed.set_thumbnail(url=self.bot.user.avatar)
             embed.set_footer(text='Error Message', icon_url=ctx.author.avatar)
-            embed.timestamp = datetime.utcnow()
+            embed.timestamp = datetime.now(timezone.utc)
             await ctx.respond(embed=embed)
             # await channel.send(embed=embed)
 
