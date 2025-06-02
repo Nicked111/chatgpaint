@@ -1,10 +1,7 @@
-import time
 import discord
 from discord.ext import commands
-import random
-import threading
 from dotenv import load_dotenv
-import os
+
 load_dotenv()
 
 class Setups(commands.Cog): # create a class for our cog that inherits from commands.Cog
