@@ -4,9 +4,12 @@ import discord
 from discord.ext import commands, tasks
 from ext.system import default_embed
 
+import logging
 from db import Database
 from db.economy import EconomyBackend
 from db.birthdays import BirthdayBackend
+
+ERROR_MESSAGE = "An error occurred. Please try again later."
 
 
 class Stuff(commands.Cog):  # create a class for our cog that inherits from commands.Cog
@@ -70,11 +73,13 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
 
     @birthdayCommandGroup.command(name="set", description="Set your birthday.",
                                   contexts={discord.InteractionContextType.guild})
-    @discord.option(name="day", description="The day of your birthday as a number. (eg. 14)", type=discord.SlashCommandOptionType.integer,
+    @discord.option(name="day", description="The day of your birthday as a number. (eg. 14)",
+                    type=discord.SlashCommandOptionType.integer,
                     required=True)
     @discord.option(name="month", description="The month of your birthday as a number. (eg. 5 for May)",
                     type=discord.SlashCommandOptionType.integer, required=True)
-    @discord.option(name="year", description="The year of your birthday as a number. (eg. 2000)", type=discord.SlashCommandOptionType.integer,
+    @discord.option(name="year", description="The year of your birthday as a number. (eg. 2000)",
+                    type=discord.SlashCommandOptionType.integer,
                     required=False)
     async def setBirthday(self, ctx, day: int, month: int, year: int = 1900):
         birthday = None
@@ -93,8 +98,8 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
                 await BirthdayBackend().update_user_record(ctx.author.id, ctx.guild.id, birthday)
                 await ctx.respond("Birthday updated!")
         except Exception as e:
-            await ctx.respond("An error occurred. Please try again later.", ephemeral=True)
-            print(e)
+            await ctx.respond(ERROR_MESSAGE, ephemeral=True)
+            logging.error(e)
 
     @birthdayCommandGroup.command(name="delete", description="Delete your birthday.",
                                   contexts={discord.InteractionContextType.guild})
@@ -103,8 +108,8 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
             await BirthdayBackend().delete_user_record(ctx.author.id, ctx.guild.id)
             await ctx.respond("Birthday deleted!")
         except Exception as e:
-            await ctx.respond("An error occurred. Please try again later.", ephemeral=True)
-            print(e)
+            await ctx.respond(ERROR_MESSAGE, ephemeral=True)
+            logging.error(e)
 
     @birthdayCommandGroup.command(name="view", description="View your birthday.",
                                   contexts={discord.InteractionContextType.guild})
@@ -122,10 +127,10 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
 
             if not user_record:  # Keine Daten gefunden
                 embed.description = "No birthday set."
-                pass
             elif user_record.year == 1900:
                 birthday = date(user_record.year, user_record.month, user_record.day)
-                embed.add_field(name=f"{user.global_name}'s Birthday", value=f"{birthday.day}. {birthday.strftime('%B')}")
+                embed.add_field(name=f"{user.global_name}'s Birthday",
+                                value=f"{birthday.day}. {birthday.strftime('%B')}")
             else:
                 birthday = date(user_record.year, user_record.month, user_record.day)
                 embed.add_field(name=f"{user.global_name}'s Birthday",
@@ -134,16 +139,19 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
                 if (date.today().month, date.today().day) < (birthday.month, birthday.day): age -= 1
                 embed.add_field(name="Age", value=f"{age} years")
         except Exception as e:
-            embed.description = "An error occurred. Please try again later."
+            embed.description = ERROR_MESSAGE
             print(e)
-        if user.color != discord.Color.default(): embed.color = user.color
-        else: embed.color = 0x1abc9c
+        if user.color != discord.Color.default():
+            embed.color = user.color
+        else:
+            embed.color = 0x1abc9c
         await ctx.respond(embed=embed)
 
     economyCommandGroup = discord.SlashCommandGroup(name="economy", description="A selection of economy commands.",
-                                        contexts={discord.InteractionContextType.guild})
+                                                    contexts={discord.InteractionContextType.guild})
+
     @economyCommandGroup.command(name="balance", description="View your balance.",
-                                  contexts={discord.InteractionContextType.guild})
+                                 contexts={discord.InteractionContextType.guild})
     @discord.option(name="user", description="The user whose balance you want to view.",
                     type=discord.SlashCommandOptionType.user, required=False)
     async def balance(self, ctx, user: discord.User = None):
@@ -153,11 +161,11 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
                 balance = 0
             await ctx.respond(f"Your balance is {balance}.")
         except Exception as e:
-            await ctx.respond("An error occurred. Please try again later.", ephemeral=True)
-            print(e)
-    
+            await ctx.respond(ERROR_MESSAGE, ephemeral=True)
+            logging.error(e)
+
     @economyCommandGroup.command(name="set", description="Give someone money.",
-                                  contexts={discord.InteractionContextType.guild})
+                                 contexts={discord.InteractionContextType.guild})
     @discord.option(name="user", description="The user you want to give money to.",
                     type=discord.SlashCommandOptionType.user, required=True)
     @discord.option(name="amount", description="The amount of money you want to set.",
@@ -169,8 +177,9 @@ class Stuff(commands.Cog):  # create a class for our cog that inherits from comm
             await EconomyBackend().set_balance(user.id, ctx.guild.id, amount)
             await ctx.respond(f"{amount} coins given to {user.name}.", ephemeral=True)
         except Exception as e:
-            await ctx.respond("An error occurred. Please try again later.", ephemeral=True)
-            print(e)
+            await ctx.respond(ERROR_MESSAGE, ephemeral=True)
+            logging.error(e)
+
 
 def setup(bot):  # this is called by Pycord to setup the cog
     bot.add_cog(Stuff(bot))  # add the cog to the bot
