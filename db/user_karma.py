@@ -87,7 +87,7 @@ class UserKarma(Database):
 
             await session.commit()
 
-    async def handle_reaction_change(message_author, guild_id, emoji_id, is_addition: bool):
+    async def handle_reaction_change(self, message_author, guild_id, emoji_id, is_addition: bool):
         upvote_emoji = 1199472652721586298
         downvote_emoji = 1199472654185418752
 
