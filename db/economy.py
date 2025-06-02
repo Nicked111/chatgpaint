@@ -1,6 +1,4 @@
-import logging
-
-from sqlalchemy import insert, select, delete, update
+from sqlalchemy import insert, select, update
 
 from db import Database
 from db.tables import EconomyTable
